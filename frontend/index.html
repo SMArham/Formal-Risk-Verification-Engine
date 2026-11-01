@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AXIOM — Formal Risk Engine</title>
+  
+  <!-- Inter & JetBrains Mono Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- KaTeX for crisp LaTeX formulas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+  <!-- Three.js for 3D Risk Manifold -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Chart.js for Laplacian Spectrum -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="styles.css?v=3.0.0">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Minimalist Enterprise Header -->
+    <header class="app-header">
+      <div class="logo-group">
+        <h1 class="logo-title">AXIOM</h1>
+      </div>
+    </header>
+
+    <!-- Responsive Navigation Tabs -->
+    <nav class="mode-tabs">
+      <div class="tabs-scroll-container">
+        <button class="tab-btn active" data-tab="fraud-tab">Fraud Detection</button>
+        <button class="tab-btn" data-tab="credit-tab">Credit Solvency</button>
+        <button class="tab-btn" data-tab="adversary-tab">Adversarial Arena (MCTS)</button>
+        <button class="tab-btn" data-tab="axioms-tab">Axiom Registry</button>
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+      <!-- =================================================================== -->
+      <!-- TAB 1: FRAUD DETECTION                                              -->
+      <!-- =================================================================== -->
+      <section id="fraud-tab" class="tab-panel active">
+        <!-- Preset Scenarios -->
+        <div class="presets-bar">
+          <span class="presets-label">Scenarios:</span>
+          <div class="presets-scroll">
+            <button class="preset-btn active" onclick="loadFraudPreset('normal', this)">Standard Purchase</button>
+            <button class="preset-btn" onclick="loadFraudPreset('impossible_travel', this)">Impossible Travel (A2)</button>
+            <button class="preset-btn" onclick="loadFraudPreset('clock_replay', this)">Clock Inversion (A2)</button>
+            <button class="preset-btn" onclick="loadFraudPreset('bot_burst', this)">Multi-Device Burst (A4)</button>
+            <button class="preset-btn" onclick="loadFraudPreset('entropy_spike', this)">Entropy Spike (A7)</button>
+          </div>
+        </div>
+
+        <div class="engine-grid">
+          <!-- Column 1: Feature Parameters -->
+          <div class="card form-panel">
+            <div class="panel-header">
+              <h2>Transaction Parameters</h2>
+            </div>
+            <form id="fraud-form" onsubmit="event.preventDefault(); evaluateFraud();">
+              <div class="form-row">
+                <div class="form-group">
+                  <div class="label-with-val">
+                    <label for="f-amount">Amount</label>
+                    <span class="live-val" id="f-amount-val">$250</span>
+                  </div>
+                  <input type="range" id="f-amount-slider" min="10" max="10000" step="50" value="250" class="interactive-slider" oninput="syncSliderToInput('f-amount', this.value, '$')">
+                  <input type="number" id="f-amount" value="250.0" step="any" oninput="syncInputToSlider('f-amount-slider', this.value, '$', 'f-amount-val')">
+                </div>
+                <div class="form-group">
+                  <div class="label-with-val">
+                    <label for="f-balance">Pre-Balance</label>
+                    <span class="live-val" id="f-balance-val">$1,500</span>
+                  </div>
+                  <input type="range" id="f-balance-slider" min="0" max="25000" step="100" value="1500" class="interactive-slider" oninput="syncSliderToInput('f-balance', this.value, '$')">
+                  <input type="number" id="f-balance" value="1500.0" step="any" oninput="syncInputToSlider('f-balance-slider', this.value, '$', 'f-balance-val')">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <div class="label-with-val">
+                    <label for="f-dt">Time Delta (s)</label>
+                    <span class="live-val" id="f-dt-val">60s</span>
+                  </div>
+                  <input type="range" id="f-dt-slider" min="-60" max="300" step="5" value="60" class="interactive-slider" oninput="syncSliderToInput('f-dt', this.value, 's')">
+                  <input type="number" id="f-dt" value="60" step="any" oninput="syncInputToSlider('f-dt-slider', this.value, 's', 'f-dt-val')">
+                </div>
+                <div class="form-group">
+                  <div class="label-with-val">
+                    <label for="f-distance">Geo Jump (km)</label>
+                    <span class="live-val highlight-cyan" id="f-distance-val">5 km</span>
+                  </div>
+                  <input type="range" id="f-distance-slider" min="0" max="5000" step="25" value="5" class="interactive-slider" oninput="syncSliderToInput('f-distance', this.value, ' km')">
+                  <input type="number" id="f-distance" value="5.0" step="any" oninput="syncInputToSlider('f-distance-slider', this.value, ' km', 'f-distance-val')">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <div class="label-with-val">
+                    <label for="f-devices">Active Devices</label>
+                    <span class="live-val" id="f-devices-val">1</span>
+                  </div>
+                  <input type="range" id="f-devices-slider" min="1" max="10" step="1" value="1" class="interactive-slider" oninput="syncSliderToInput('f-devices', this.value, '')">
+                  <input type="number" id="f-devices" value="1" min="1" max="10" step="1" oninput="syncInputToSlider('f-devices-slider', this.value, '', 'f-devices-val')">
+                </div>
+                <div class="form-group">
+                  <div class="label-with-val">
+                    <label for="f-velocity">Velocity (tx/h)</label>
+                    <span class="live-val highlight-amber" id="f-velocity-val">2.0 tx/h</span>
+                  </div>
+                  <input type="range" id="f-velocity-slider" min="0.5" max="35" step="0.5" value="2.0" class="interactive-slider" oninput="syncSliderToInput('f-velocity', this.value, ' tx/h')">
+                  <input type="number" id="f-velocity" value="2.0" step="any" oninput="syncInputToSlider('f-velocity-slider', this.value, ' tx/h', 'f-velocity-val')">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <div class="label-with-val">
+                    <label for="f-dev-age">Device Age (days)</label>
+                    <span class="live-val" id="f-dev-age-val">45 d</span>
+                  </div>
+                  <input type="range" id="f-dev-age-slider" min="0.1" max="365" step="0.1" value="45" class="interactive-slider" oninput="syncSliderToInput('f-dev-age', this.value, ' d')">
+                  <input type="number" id="f-dev-age" value="45.0" step="any" oninput="syncInputToSlider('f-dev-age-slider', this.value, ' d', 'f-dev-age-val')">
+                </div>
+                <div class="form-group">
+                  <div class="label-with-val">
+                    <label for="f-entropy">Entropy (bits)</label>
+                    <span class="live-val" id="entropy-val">1.8 bits</span>
+                  </div>
+                  <input type="range" id="f-entropy" min="0.5" max="5.0" step="0.1" value="1.8" class="interactive-slider" oninput="onEntropySliderChange(this.value)">
+                  <input type="hidden" id="f-geos" value="1">
+                </div>
+              </div>
+
+              <div class="live-eval-badge">
+                <span class="pulse-dot"></span> Live Mathematical Verification Active
+              </div>
+            </form>
+
+            <div class="invariants-list">
+              <h3>Invariant Verification Status</h3>
+              <div class="invariant-check" id="inv-a1"><span class="inv-led pass"></span> A1: Value Conservation</div>
+              <div class="invariant-check" id="inv-a2"><span class="inv-led pass"></span> A2: Temporal & Causal Relativity</div>
+              <div class="invariant-check" id="inv-a3"><span class="inv-led pass"></span> A3: Balance Non-Negativity</div>
+              <div class="invariant-check" id="inv-a4"><span class="inv-led pass"></span> A4: Identity Coherence</div>
+              <div class="invariant-check" id="inv-a7"><span class="inv-led pass"></span> A7: Behavioral Entropy Boundedness</div>
+            </div>
+          </div>
+
+          <!-- Column 2: 3D Curvature Manifold -->
+          <div class="card manifold-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Risk Curvature Manifold</h2>
+                <p class="panel-sub">Continuous Feasibility Surface &bull; Distance $d(\mathbf{x}, \partial\mathcal{P})$: <strong id="polytope-dist">0.00</strong></p>
+              </div>
+            </div>
+
+            <div class="canvas-3d-toolbar">
+              <button type="button" class="hud-pill-btn active" id="btn-toggle-orbit" onclick="toggleAutoOrbit()">
+                Auto-Rotate: <strong id="orbit-status">ON</strong>
+              </button>
+              <button type="button" class="hud-pill-btn" id="btn-toggle-wave" onclick="toggleWaveDynamics()">
+                Surface: <strong id="wave-dynamics-status">Wave (Dynamic)</strong>
+              </button>
+              <button type="button" class="hud-pill-btn" onclick="reset3DCamera()">
+                Recenter
+              </button>
+            </div>
+
+            <div id="manifold-canvas-container" class="canvas-3d"></div>
+            <div class="manifold-legend">
+              <span class="legend-item"><span class="legend-dot user-dot"></span> State Vector</span>
+              <span class="legend-item"><span class="legend-dot fraud-dot"></span> Fraud Boundary</span>
+              <span class="legend-item"><span class="legend-line"></span> Geodesic Trajectory</span>
+            </div>
+          </div>
+
+          <!-- Column 3: SMT Decision & Certificate -->
+          <div class="card decision-panel">
+            <div class="panel-header">
+              <h2>Decision Verdict</h2>
+            </div>
+            
+            <div class="decision-banner" id="fraud-decision-banner">
+              <div class="decision-badge badge-allow" id="fraud-decision-badge">ALLOW</div>
+              <div class="score-display">
+                <div class="score-title">Formal Risk Score</div>
+                <div class="score-num" id="fraud-risk-score">0.05</div>
+              </div>
+            </div>
+
+            <!-- Bipartite Laplacian Spectrum -->
+            <div class="spectral-box">
+              <div class="spectral-header">
+                <h3>Bipartite Laplacian Spectrum</h3>
+                <span id="spectral-status" class="spectral-pass">Normal</span>
+              </div>
+              <div class="chart-container">
+                <canvas id="spectralChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Certificate Summary -->
+            <div class="cert-summary-box">
+              <h3>Audit Certificate</h3>
+              <div class="cert-field"><span>ID:</span> <code id="f-cert-id">CERT-INIT</code></div>
+              <div class="cert-field"><span>SHA-256 Signature:</span> <code id="f-cert-sig">...</code></div>
+              <div class="cert-actions">
+                <button class="btn btn-secondary btn-sm" onclick="exportFraudCertificateJSON()">Download JSON</button>
+                <button class="btn btn-primary btn-sm" onclick="openPrintableCertificate('last_fraud')">Print Report</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 2: CREDIT SOLVENCY                                              -->
+      <!-- =================================================================== -->
+      <section id="credit-tab" class="tab-panel">
+        <div class="presets-bar">
+          <span class="presets-label">Profiles:</span>
+          <div class="presets-scroll">
+            <button class="preset-btn active" onclick="loadCreditPreset('prime', this)">Prime Borrower</button>
+            <button class="preset-btn" onclick="loadCreditPreset('subprime', this)">Subprime Deficit</button>
+            <button class="preset-btn" onclick="loadCreditPreset('strategic_default', this)">Strategic Default</button>
+            <button class="preset-btn" onclick="loadCreditPreset('volatile', this)">High Volatility</button>
+          </div>
+        </div>
+
+        <div class="engine-grid credit-grid">
+          <!-- Credit Form -->
+          <div class="card form-panel">
+            <div class="panel-header">
+              <h2>Applicant Balance Sheet</h2>
+            </div>
+            <form id="credit-form" oninput="debouncedEvaluateCredit()" onsubmit="event.preventDefault(); evaluateCredit();">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="c-income">Gross Income ($)</label>
+                  <input type="number" id="c-income" value="6500" step="any">
+                </div>
+                <div class="form-group">
+                  <label for="c-obligations">Debt Service ($)</label>
+                  <input type="number" id="c-obligations" value="1200" step="any">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="c-living">Living Costs ($)</label>
+                  <input type="number" id="c-living" value="2000" step="any">
+                </div>
+                <div class="form-group">
+                  <label for="c-emi">Proposed EMI ($)</label>
+                  <input type="number" id="c-emi" value="700" step="any">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="c-loan">Principal ($)</label>
+                  <input type="number" id="c-loan" value="25000" step="any">
+                </div>
+                <div class="form-group">
+                  <label for="c-collateral">Collateral ($)</label>
+                  <input type="number" id="c-collateral" value="30000" step="any">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="c-reputation">Reputation Penalty ($)</label>
+                  <input type="number" id="c-reputation" value="6000" step="any">
+                </div>
+                <div class="form-group">
+                  <label for="c-legal">Legal Sanctions ($)</label>
+                  <input type="number" id="c-legal" value="4000" step="any">
+                </div>
+              </div>
+
+              <div class="live-eval-badge">
+                <span class="pulse-dot"></span> Real-time Solvency Inference Active
+              </div>
+            </form>
+
+            <div class="invariants-list">
+              <h3>Solvency Axiom Checks</h3>
+              <div class="invariant-check" id="inv-c-a8"><span class="inv-led pass"></span> A8: Discretionary Slack Non-Negative</div>
+              <div class="invariant-check" id="inv-c-a9"><span class="inv-led pass"></span> A9: Rational Repayment Incentive</div>
+            </div>
+          </div>
+
+          <!-- Credit Analytics: Kalman & Imprecise Interval Bounds -->
+          <div class="card credit-analytics-panel">
+            <div class="panel-header">
+              <h2>Imprecise Bounds & Solvency</h2>
+            </div>
+            
+            <div class="kalman-box">
+              <div class="kalman-metrics">
+                <div class="k-metric">
+                  <div class="k-label">PD Interval [PD_min, PD_max]</div>
+                  <div class="k-val" id="c-pd-interval">[0.5%, 4.2%]</div>
+                </div>
+                <div class="k-metric">
+                  <div class="k-label">Expected Loss Interval</div>
+                  <div class="k-val" id="c-el-interval">[$56, $472]</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="symbolic-formulas-card">
+              <h3>Cantelli Generalized Solvency Bounds</h3>
+              <div class="formula-box">
+                <div class="formula-label">One-Tailed Upper Solvency Bound:</div>
+                <div class="math-expr" id="math-pd">PD_max &le; &sigma;&sup2; / (&sigma;&sup2; + Slack&sup2;)</div>
+              </div>
+              <div class="formula-box">
+                <div class="formula-label">Basel Expected Loss Interval:</div>
+                <div class="math-expr" id="math-el">EL &in; [PD_min &times; LGD &times; EAD, PD_max &times; LGD &times; EAD]</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Credit Decision Card -->
+          <div class="card credit-decision-panel">
+            <div class="panel-header">
+              <h2>Underwriting Verdict</h2>
+            </div>
+            <div class="decision-banner" id="credit-decision-banner">
+              <div class="decision-badge badge-allow" id="credit-decision-badge">APPROVE</div>
+              <div class="score-display">
+                <div class="score-title">Expected Loss</div>
+                <div class="score-num" id="credit-el">$264.00</div>
+              </div>
+            </div>
+
+            <div class="credit-stats-table">
+              <div class="cs-row"><span>Point Estimate PD:</span> <strong id="cs-pd">2.3%</strong></div>
+              <div class="cs-row"><span>Debt-to-Income:</span> <strong id="cs-dti">29.2%</strong></div>
+              <div class="cs-row"><span>Worst-Case Slack:</span> <strong id="cs-slack">+$2,600.00</strong></div>
+              <div class="cs-row"><span>Strategic Default Gap:</span> <strong id="cs-gap">$0.00</strong></div>
+            </div>
+
+            <div class="cert-summary-box">
+              <h3>Underwriting Certificate</h3>
+              <div class="cert-field"><span>ID:</span> <code id="c-cert-id">...</code></div>
+              <div class="cert-field"><span>SHA-256 Signature:</span> <code id="c-cert-sig">...</code></div>
+              <div class="cert-actions">
+                <button class="btn btn-secondary btn-sm" onclick="exportCreditCertificateJSON()">Download JSON</button>
+                <button class="btn btn-primary btn-sm" onclick="openPrintableCertificate('last_credit')">Print Report</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 3: ADVERSARIAL ARENA (MCTS TWIN)                               -->
+      <!-- =================================================================== -->
+      <section id="adversary-tab" class="tab-panel">
+        <div class="card arena-control-panel">
+          <div class="panel-header arena-header-flex">
+            <div>
+              <h2>Adversarial Boundary Search (MCTS)</h2>
+              <p class="panel-sub">Continuous tree search probing invariant boundaries for zero-day vulnerabilities.</p>
+            </div>
+            <div class="mcts-actions">
+              <div class="budget-select-group">
+                <label for="mcts-budget-select">Budget:</label>
+                <select id="mcts-budget-select">
+                  <option value="10" selected>10 (Fast)</option>
+                  <option value="50">50 (Standard)</option>
+                  <option value="100">100 (Deep)</option>
+                </select>
+              </div>
+              <button class="btn btn-danger" id="btn-run-mcts" onclick="runMCTSAttack()">
+                Run Adversarial Test
+              </button>
+              <button class="btn btn-secondary" onclick="resetTheorems()">
+                Reset Patches
+              </button>
+            </div>
+          </div>
+
+          <div class="arena-stats-grid">
+            <div class="a-stat-card">
+              <div class="a-stat-title">Simulations Tested</div>
+              <div class="a-stat-val" id="mcts-sims">10</div>
+            </div>
+            <div class="a-stat-card">
+              <div class="a-stat-title">Exploits Detected</div>
+              <div class="a-stat-val" id="mcts-exploits-found" style="color: var(--color-green);">0</div>
+            </div>
+            <div class="a-stat-card">
+              <div class="a-stat-title">Regret Bound (&epsilon;)</div>
+              <div class="a-stat-val" id="mcts-epsilon-bound">0.000</div>
+            </div>
+            <div class="a-stat-card">
+              <div class="a-stat-title">Active Patches</div>
+              <div class="a-stat-val" id="mcts-theorems-active">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card arena-exploits-panel">
+          <div class="panel-header">
+            <h2>Detected Boundary Vulnerabilities</h2>
+          </div>
+          <div id="exploits-table-container">
+            <p class="empty-state">No vulnerabilities detected. Click "Run Adversarial Test" to probe defender boundaries.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 4: AXIOM REGISTRY                                               -->
+      <!-- =================================================================== -->
+      <section id="axioms-tab" class="tab-panel">
+        <div class="card">
+          <div class="panel-header">
+            <div>
+              <h2>Foundational Invariant Axioms</h2>
+              <p class="panel-sub">Mathematical invariants verified via Z3 SMT Satisfiability</p>
+            </div>
+          </div>
+          <div class="axioms-grid" id="axioms-catalog-container">
+            <!-- Dynamically populated from backend -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Unified Minimal Static Footer -->
+    <footer class="app-footer">
+      <div class="footer-title">AXIOM</div>
+      <div class="footer-date">2026</div>
+    </footer>
+  </div>
+
+  <script src="app.js?v=3.0.0"></script>
+</body>
+</html>

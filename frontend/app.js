@@ -308,8 +308,20 @@ function onWindowResize() {
   renderer.setSize(width, height);
 }
 
-function updatePolytopeView(polytopeData) {
-  if (!polytopeData || !userPointMesh || !scene) return;
+function updatePolytopeView(polytopeData, decision = null) {
+  if (!userPointMesh || !scene) return;
+
+  // Resolve decision either from parameter, or from DOM status badge
+  if (!decision) {
+    const badge = document.getElementById("fraud-decision-badge");
+    decision = badge ? badge.innerText.trim().toUpperCase() : "ALLOW";
+  } else {
+    decision = String(decision).trim().toUpperCase();
+  }
+
+  if (!polytopeData) {
+    polytopeData = { user_point: [0, 0, 0], is_inside_polytope: decision !== "BLOCK", distance_to_boundary: 0.0 };
+  }
 
   const [ux, uy, uz] = polytopeData.user_point || [0, 0, 0];
   const sx = Math.min(5.5, Math.max(-5.5, (ux - 5.0) * 0.7));
@@ -318,16 +330,30 @@ function updatePolytopeView(polytopeData) {
 
   userPointMesh.position.set(sx, sy, sz);
 
-  const isInside = polytopeData.is_inside_polytope;
-  if (!isInside) {
+  const isBlocked = (decision === "BLOCK") || (!polytopeData.is_inside_polytope);
+  const isReview = (decision === "REVIEW") || (polytopeData.proximity_risk > 0.35);
+
+  if (isBlocked) {
     userPointMesh.material.color.setHex(0xef4444);
-    if (waveWireMesh) waveWireMesh.material.color.setHex(0xef4444);
-  } else if (polytopeData.proximity_risk > 0.35) {
+    if (waveWireMesh) {
+      waveWireMesh.material.color.setHex(0xef4444);
+      waveWireMesh.material.opacity = 0.95;
+    }
+    if (waveMesh) waveMesh.material.color.setHex(0x271414);
+  } else if (isReview) {
     userPointMesh.material.color.setHex(0xf59e0b);
-    if (waveWireMesh) waveWireMesh.material.color.setHex(0xf59e0b);
+    if (waveWireMesh) {
+      waveWireMesh.material.color.setHex(0xf59e0b);
+      waveWireMesh.material.opacity = 0.75;
+    }
+    if (waveMesh) waveMesh.material.color.setHex(0x221a12);
   } else {
     userPointMesh.material.color.setHex(0x10b981);
-    if (waveWireMesh) waveWireMesh.material.color.setHex(0x3f3f46);
+    if (waveWireMesh) {
+      waveWireMesh.material.color.setHex(0x3f3f46);
+      waveWireMesh.material.opacity = 0.55;
+    }
+    if (waveMesh) waveMesh.material.color.setHex(0x18181b);
   }
 
   // Geodesic Trajectory
@@ -336,7 +362,7 @@ function updatePolytopeView(polytopeData) {
     boundaryLineMesh.geometry.dispose();
   }
 
-  const targetPoint = isInside ? new THREE.Vector3(4.2, 1.4, 4.2) : new THREE.Vector3(sx, -0.6, sz);
+  const targetPoint = !isBlocked ? new THREE.Vector3(4.2, 1.4, 4.2) : new THREE.Vector3(sx, -0.6, sz);
   const midPoint = new THREE.Vector3(
     (sx + targetPoint.x) / 2,
     Math.max(sy, targetPoint.y) + 1.0,
@@ -352,7 +378,7 @@ function updatePolytopeView(polytopeData) {
   const points = curve.getPoints(20);
   const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
   const lineMat = new THREE.LineDashedMaterial({
-    color: isInside ? 0x10b981 : 0xef4444,
+    color: isBlocked ? 0xef4444 : (isReview ? 0xf59e0b : 0x10b981),
     dashSize: 0.3,
     gapSize: 0.2,
     linewidth: 1.5
@@ -494,7 +520,7 @@ function updateFraudUI(evaluation, certificate) {
   setLedStatus("inv-a4", axiomMap["A4"] !== undefined ? axiomMap["A4"] : true);
   setLedStatus("inv-a7", axiomMap["A7"] !== undefined ? axiomMap["A7"] : true);
 
-  updatePolytopeView(evaluation.polytope);
+  updatePolytopeView(evaluation.polytope, evaluation.decision);
   updateSpectralView(evaluation.spectral);
 
   const certIdEl = document.getElementById("f-cert-id");

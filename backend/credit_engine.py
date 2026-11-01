@@ -224,12 +224,9 @@ class CreditRiskEngine:
         # 4. Solvency Decision Synthesis
         violations = [r for r in axiom_results if not r["satisfied"]]
 
-        if violations or pd_val > 0.45 or kalman_res["solvency_probability"] < 0.40 or bounds["slack_interval"][0] < 0:
+        if violations or pd_val > 0.35 or kalman_res["solvency_probability"] < 0.50 or bounds["slack_interval"][0] < 0 or dti_val > 0.50:
             decision = "REJECT"
             risk_score = max(0.75, pd_val)
-        elif pd_val > 0.18 or kalman_res["solvency_probability"] < 0.70 or dti_val > 0.45:
-            decision = "REVIEW"
-            risk_score = max(0.40, pd_val)
         else:
             decision = "APPROVE"
             risk_score = round(pd_val, 3)

@@ -44,6 +44,10 @@ class DynamicBipartiteRiskGraph:
             self.graph.add_edge(f"user_{i}", f"dev_clean_{i}")
             self.graph.add_edge(f"user_{i}", f"ip_clean_{i}")
 
+    def reset(self):
+        self.graph = nx.Graph()
+        self._seed_baseline()
+
     def add_transaction_interaction(
         self,
         account_id: str,
@@ -188,6 +192,7 @@ class FraudEngine:
         """
         Full formal SMT evaluation of a transaction event without historical data.
         """
+        self.risk_graph.reset()
         amount = float(txn.get("amount", 100.0))
         bal_before = float(txn.get("balance_before", 1000.0))
         bal_after = float(txn.get("balance_after", bal_before - amount))
@@ -277,10 +282,8 @@ class FraudEngine:
         base_risk += 0.15 * polytope["proximity_risk"]
         composite_risk = min(1.0, max(0.0, base_risk))
 
-        if violations or thm_violations or composite_risk >= 0.70:
+        if violations or thm_violations or spectral["is_anomaly"] or not polytope["is_inside_polytope"] or composite_risk >= 0.50:
             decision = "BLOCK"
-        elif composite_risk >= 0.40 or spectral["is_anomaly"] or not polytope["is_inside_polytope"]:
-            decision = "REVIEW"
         else:
             decision = "ALLOW"
 

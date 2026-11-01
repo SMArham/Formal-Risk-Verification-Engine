@@ -330,8 +330,7 @@ function updatePolytopeView(polytopeData, decision = null) {
 
   userPointMesh.position.set(sx, sy, sz);
 
-  const isBlocked = (decision === "BLOCK") || (!polytopeData.is_inside_polytope);
-  const isReview = (decision === "REVIEW") || (polytopeData.proximity_risk > 0.35);
+  const isBlocked = (decision === "BLOCK") || (decision === "REJECT") || (!polytopeData.is_inside_polytope);
 
   if (isBlocked) {
     userPointMesh.material.color.setHex(0xef4444);
@@ -340,13 +339,6 @@ function updatePolytopeView(polytopeData, decision = null) {
       waveWireMesh.material.opacity = 0.95;
     }
     if (waveMesh) waveMesh.material.color.setHex(0x271414);
-  } else if (isReview) {
-    userPointMesh.material.color.setHex(0xf59e0b);
-    if (waveWireMesh) {
-      waveWireMesh.material.color.setHex(0xf59e0b);
-      waveWireMesh.material.opacity = 0.75;
-    }
-    if (waveMesh) waveMesh.material.color.setHex(0x221a12);
   } else {
     userPointMesh.material.color.setHex(0x10b981);
     if (waveWireMesh) {
@@ -378,7 +370,7 @@ function updatePolytopeView(polytopeData, decision = null) {
   const points = curve.getPoints(20);
   const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
   const lineMat = new THREE.LineDashedMaterial({
-    color: isBlocked ? 0xef4444 : (isReview ? 0xf59e0b : 0x10b981),
+    color: isBlocked ? 0xef4444 : 0x10b981,
     dashSize: 0.3,
     gapSize: 0.2,
     linewidth: 1.5

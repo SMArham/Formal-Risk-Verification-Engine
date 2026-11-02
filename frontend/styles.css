@@ -1054,7 +1054,10 @@ input[type="number"]:focus, select:focus {
 .footer-content {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 14px;
+  white-space: nowrap;
+  flex-wrap: nowrap;
 }
 
 .footer-title {
@@ -1116,8 +1119,8 @@ input[type="number"]:focus, select:focus {
   }
 }
 
-/* Mobile Screens (<= 768px): Touch-first 2x2 Tabs, Swipeable Presets, Smart Reordering */
-@media (max-width: 768px) {
+/* Mobile & Tablet Screens (<= 860px): Touch-first 2x2 Tabs, Swipeable Presets, Smart Reordering */
+@media (max-width: 860px) {
   .app-header {
     padding: 28px 18px;
     justify-content: center;
@@ -1456,18 +1459,34 @@ input[type="number"]:focus, select:focus {
 
   /* Footer: Spacious & Centered */
   .app-footer {
-    padding: 28px 18px;
+    padding: 30px 18px;
     margin-top: 36px;
     justify-content: center;
   }
 
+  .footer-content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+  }
+
   .footer-title {
-    font-size: 18px;
+    font-size: 19px;
+    font-weight: 900;
     letter-spacing: 3px;
+    white-space: nowrap;
+  }
+
+  .footer-sep {
+    font-size: 16px;
   }
 
   .footer-date {
     font-size: 15px;
+    white-space: nowrap;
   }
 }
 
@@ -1493,11 +1512,27 @@ input[type="number"]:focus, select:focus {
 
   .app-footer {
     padding: 24px 16px;
-    margin-top: 30px;
+    margin-top: 32px;
+  }
+
+  .footer-content {
+    gap: 10px;
+    white-space: nowrap;
+    flex-wrap: nowrap;
   }
 
   .footer-title {
-    font-size: 16px;
+    font-size: 17px;
     letter-spacing: 2px;
+    white-space: nowrap;
+  }
+
+  .footer-sep {
+    font-size: 15px;
+  }
+
+  .footer-date {
+    font-size: 14px;
+    white-space: nowrap;
   }
 }

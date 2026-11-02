@@ -931,9 +931,10 @@ input[type="number"]:focus, select:focus {
 
 .axioms-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 18px;
-  margin-top: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+  width: 100%;
 }
 
 .axiom-card {
@@ -1014,26 +1015,37 @@ input[type="number"]:focus, select:focus {
 
 .app-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 24px 32px;
+  padding: 20px 24px;
   background: var(--bg-surface);
   border-top: 1px solid var(--border-color);
-  font-size: 13px;
-  color: var(--text-dim);
   width: 100%;
+}
+
+.footer-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .footer-title {
   font-size: 15px;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   color: #ffffff;
+  text-transform: uppercase;
+}
+
+.footer-sep {
+  color: var(--text-dim);
+  font-size: 14px;
 }
 
 .footer-date {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--text-dim);
 }
 
@@ -1063,42 +1075,168 @@ input[type="number"]:focus, select:focus {
   .arena-stats-grid {
     grid-template-columns: 1fr 1fr;
   }
-
-  .app-footer {
-    padding: 18px 24px;
-  }
 }
 
-/* Mobile Screens (<= 640px) */
-@media (max-width: 640px) {
+/* Mobile Screens (<= 768px): Touch-first 2x2 Tabs, Wrapping Chips, Smart Reordering */
+@media (max-width: 768px) {
   .app-header {
-    padding: 16px 16px;
+    padding: 14px 16px;
+    justify-content: center;
   }
 
   .logo-title {
-    font-size: 20px;
+    font-size: 22px;
     letter-spacing: 2px;
   }
 
+  /* 2x2 Segmented Navigation Control on Mobile */
   .mode-tabs {
-    padding: 0 14px;
+    padding: 10px 14px;
+    overflow-x: visible;
   }
 
+  .tabs-scroll-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-muted);
+    white-space: normal;
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.15s ease;
+    line-height: 1.25;
+  }
+
+  .tab-btn:hover {
+    background: #27272a;
+    color: var(--text-main);
+  }
+
+  .tab-btn.active {
+    background: #27272a;
+    color: #ffffff;
+    border-color: #52525b;
+    border-bottom-color: #52525b;
+    font-weight: 600;
+  }
+
+  /* Responsive Wrapping Presets */
+  .presets-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 16px;
+    overflow-x: visible;
+  }
+
+  .presets-label {
+    font-size: 11px;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+  }
+
+  .presets-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .preset-btn {
+    flex: 1 1 calc(50% - 6px);
+    text-align: center;
+    padding: 8px 10px;
+    font-size: 11px;
+    border-radius: 6px;
+    white-space: normal;
+  }
+
+  /* Smart Mobile Ordering: Verdict & 3D at TOP, sliders below */
+  .engine-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .engine-grid .decision-panel {
+    order: 1;
+  }
+
+  .engine-grid .manifold-panel {
+    order: 2;
+  }
+
+  .engine-grid .form-panel {
+    order: 3;
+  }
+
+  .credit-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .credit-grid .credit-decision-panel {
+    order: 1;
+  }
+
+  .credit-grid .form-panel {
+    order: 2;
+  }
+
+  .credit-grid .credit-analytics-panel {
+    order: 3;
+  }
+
+  /* Container & Padding */
   .main-content {
-    padding: 16px 14px;
+    padding: 14px 12px;
   }
 
   .card {
     padding: 16px 14px;
+    border-radius: 8px;
+    width: 100%;
   }
 
+  .panel-header h2 {
+    font-size: 15px;
+  }
+
+  /* Compact 2-column form rows */
   .form-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
   }
 
+  .form-group input[type="number"],
+  .form-group input[type="text"],
+  .form-group select {
+    font-size: 13px;
+    padding: 7px 8px;
+  }
+
+  /* 3D Canvas on Mobile */
   .canvas-3d {
-    height: 280px;
+    height: 270px;
   }
 
   .canvas-3d-toolbar {
@@ -1110,27 +1248,45 @@ input[type="number"]:focus, select:focus {
     padding: 4px 8px;
   }
 
+  /* Adversarial Arena Mobile */
   .arena-stats-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .a-stat-card {
+    padding: 12px;
+  }
+
+  .a-stat-val {
+    font-size: 20px;
   }
 
   .arena-header-flex {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
 
   .mcts-actions {
     flex-direction: column;
     width: 100%;
+    gap: 8px;
   }
 
-  .mcts-actions .btn, .budget-select-group {
+  .mcts-actions .btn,
+  .budget-select-group {
     width: 100%;
   }
 
   .budget-select-group select {
     flex: 1;
+  }
+
+  #exploits-table-container {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
   }
 
   .decision-banner {
@@ -1145,17 +1301,59 @@ input[type="number"]:focus, select:focus {
 
   .kalman-metrics {
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
 
+  /* Axioms Grid Mobile */
   .axioms-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+    width: 100%;
   }
 
+  .axiom-card {
+    padding: 14px;
+    width: 100%;
+  }
+
+  .axiom-formula {
+    padding: 8px;
+    min-height: 44px;
+    overflow-x: auto;
+    width: 100%;
+  }
+
+  .axiom-formula .katex {
+    font-size: 0.95em;
+  }
+
+  /* Footer stays centered horizontal */
   .app-footer {
+    padding: 16px 14px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 420px) {
+  .logo-title {
+    font-size: 20px;
+  }
+
+  .tab-btn {
+    font-size: 11px;
+    padding: 8px 4px;
+  }
+
+  .presets-scroll {
     flex-direction: column;
+  }
+
+  .preset-btn {
+    width: 100%;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
     gap: 8px;
-    text-align: center;
-    padding: 18px 16px;
   }
 }

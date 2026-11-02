@@ -134,6 +134,7 @@ function initTabs() {
 
       if (targetId === "fraud-tab" && renderer && camera) {
         onWindowResize();
+        setTimeout(onWindowResize, 60);
       }
     });
   });
